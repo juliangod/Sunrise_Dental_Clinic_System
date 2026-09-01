@@ -37,50 +37,55 @@ public void setParentFrame(com.sunrise.dentalclinic.ui.MainFrame parentFrame) {
         passwordField = new javax.swing.JPasswordField();
         loginButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+
+        setBackground(new java.awt.Color(250, 250, 252));
 
         jLabel1.setText("Username :");
 
         jLabel2.setText("Password:");
 
-        usernameField.setText("text");
         usernameField.addActionListener(this::usernameFieldActionPerformed);
-
-        passwordField.setText("jPasswordField1");
 
         loginButton.setText("Login ");
         loginButton.addActionListener(this::loginButtonActionPerformed);
 
         jLabel3.setText("LOGIN");
 
+        jLabel4.setFont(new java.awt.Font("Segoe UI Black", 1, 14)); // NOI18N
+        jLabel4.setText("Sunrise Dental Clinic");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(81, 81, 81)
+                .addGap(122, 122, 122)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(44, 44, 44)
+                        .addComponent(loginButton))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(67, 67, 67)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2))
                         .addGap(42, 42, 42)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(131, 131, 131)
-                        .addComponent(loginButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(148, 148, 148)
-                        .addComponent(jLabel3)))
-                .addContainerGap(129, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
+                            .addComponent(passwordField)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(38, 38, 38)
-                .addComponent(jLabel3)
-                .addGap(42, 42, 42)
+                .addGap(77, 77, 77)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -88,56 +93,57 @@ public void setParentFrame(com.sunrise.dentalclinic.ui.MainFrame parentFrame) {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(38, 38, 38)
+                .addGap(47, 47, 47)
                 .addComponent(loginButton)
-                .addContainerGap(78, Short.MAX_VALUE))
+                .addContainerGap(90, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
+        String username = usernameField.getText().trim();
+        String password = new String(passwordField.getPassword());
+
+        if (username.isEmpty() || password.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                "Please enter both username and password.",
+                "Missing Information", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        com.sunrise.dentalclinic.service.AuthService authService = new com.sunrise.dentalclinic.service.AuthService();
+
+        try {
+            com.sunrise.dentalclinic.model.User user = authService.login(username, password);
+            if (user != null) {
+                javax.swing.JOptionPane.showMessageDialog(this,
+                    "Welcome, " + user.getFullName() + "!",
+                    "Login Successful", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                if (parentFrame != null) {
+                    parentFrame.showMainMenu(user);
+                }
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this,
+                    "Invalid username or password.",
+                    "Login Failed", javax.swing.JOptionPane.ERROR_MESSAGE);
+                passwordField.setText("");
+            }
+        } catch (java.sql.SQLException ex) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                "Database error: " + ex.getMessage(),
+                "Connection Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_loginButtonActionPerformed
 
     private void usernameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usernameFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_usernameFieldActionPerformed
-
-    private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
-        String username = usernameField.getText().trim();
-String password = new String(passwordField.getPassword());
- 
-if (username.isEmpty() || password.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(this,
-            "Please enter both username and password.",
-            "Missing Information", javax.swing.JOptionPane.WARNING_MESSAGE);
-    return;
-}
- 
-com.sunrise.dentalclinic.service.AuthService authService = new com.sunrise.dentalclinic.service.AuthService();
- 
-try {
-    com.sunrise.dentalclinic.model.User user = authService.login(username, password);
-    if (user != null) {
-        javax.swing.JOptionPane.showMessageDialog(this,
-                "Welcome, " + user.getFullName() + "!",
-                "Login Successful", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-        if (parentFrame != null) {
-            parentFrame.showMainMenu(user);
-        }
-    } else {
-        javax.swing.JOptionPane.showMessageDialog(this,
-                "Invalid username or password.",
-                "Login Failed", javax.swing.JOptionPane.ERROR_MESSAGE);
-        passwordField.setText("");
-    }
-} catch (java.sql.SQLException ex) {
-    javax.swing.JOptionPane.showMessageDialog(this,
-            "Database error: " + ex.getMessage(),
-            "Connection Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-}
-    }//GEN-LAST:event_loginButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JButton loginButton;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JTextField usernameField;

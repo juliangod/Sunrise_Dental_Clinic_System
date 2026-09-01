@@ -72,11 +72,11 @@ setLocationRelativeTo(null);
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(cardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 507, Short.MAX_VALUE))
+                .addGap(0, 500, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(cardPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(cardPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
         );
 
         pack();
@@ -124,5 +124,35 @@ public void showRegisterAppointment() {
     java.awt.CardLayout cl = (java.awt.CardLayout) cardPanel.getLayout();
     cl.show(cardPanel, "register");
 }
+
+
+public void showSearchAppointment() {
+    SearchAppointmentPanel searchPanel = new SearchAppointmentPanel();
+    searchPanel.setParentFrame(this);
+    cardPanel.add(searchPanel, "search");
+ 
+    java.awt.CardLayout cl = (java.awt.CardLayout) cardPanel.getLayout();
+    cl.show(cardPanel, "search");
+}
+
+public void showHelp() {
+    HelpPanel helpPanel = new HelpPanel();
+    helpPanel.setParentFrame(this);
+    cardPanel.add(helpPanel, "help");
+ 
+    java.awt.CardLayout cl = (java.awt.CardLayout) cardPanel.getLayout();
+    cl.show(cardPanel, "help");
+}
+ 
+
+public void showBill() {
+    BillPanel billPanel = new BillPanel();
+    billPanel.setParentFrame(this);
+    cardPanel.add(billPanel, "bill");
+ 
+    java.awt.CardLayout cl = (java.awt.CardLayout) cardPanel.getLayout();
+    cl.show(cardPanel, "bill");
+}
+ 
 }
 

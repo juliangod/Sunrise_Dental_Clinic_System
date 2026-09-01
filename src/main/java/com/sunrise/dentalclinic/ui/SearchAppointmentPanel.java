@@ -13,10 +13,15 @@ public class SearchAppointmentPanel extends javax.swing.JPanel {
     /**
      * Creates new form SearchAppointmentPanel
      */
-    public SearchAppointmentPanel() {
-        initComponents();
-    }
-
+  private com.sunrise.dentalclinic.ui.MainFrame parentFrame;
+ 
+public SearchAppointmentPanel() {
+    initComponents();
+}
+ 
+public void setParentFrame(com.sunrise.dentalclinic.ui.MainFrame parentFrame) {
+    this.parentFrame = parentFrame;
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -111,11 +116,58 @@ public class SearchAppointmentPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
-        // TODO add your handling code here:
+      if (parentFrame != null) {
+    parentFrame.showMainMenuAgain();
+}
     }//GEN-LAST:event_backButtonActionPerformed
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-        // TODO add your handling code here:
+     String appointmentNumber = searchField.getText().trim();
+if (appointmentNumber.isEmpty()) {
+    javax.swing.JOptionPane.showMessageDialog(this,
+            "Please enter an appointment number.",
+            "Missing Input", javax.swing.JOptionPane.WARNING_MESSAGE);
+    return;
+}
+ 
+try {
+    com.sunrise.dentalclinic.dao.AppointmentDAO appointmentDAO = new com.sunrise.dentalclinic.dao.AppointmentDAO();
+    com.sunrise.dentalclinic.model.Appointment appointment =
+            appointmentDAO.findByAppointmentNumber(appointmentNumber);
+ 
+    if (appointment == null) {
+        resultArea.setText("No appointment found with number: " + appointmentNumber);
+        return;
+    }
+ 
+    com.sunrise.dentalclinic.dao.PatientDAO patientDAO = new com.sunrise.dentalclinic.dao.PatientDAO();
+    com.sunrise.dentalclinic.dao.DentistDAO dentistDAO = new com.sunrise.dentalclinic.dao.DentistDAO();
+    com.sunrise.dentalclinic.dao.TreatmentDAO treatmentDAO = new com.sunrise.dentalclinic.dao.TreatmentDAO();
+ 
+    com.sunrise.dentalclinic.model.Patient patient = patientDAO.findById(appointment.getPatientId());
+    com.sunrise.dentalclinic.model.Dentist dentist = dentistDAO.findById(appointment.getDentistId());
+    com.sunrise.dentalclinic.model.Treatment treatment = treatmentDAO.findById(appointment.getTreatmentId());
+ 
+    StringBuilder sb = new StringBuilder();
+    sb.append("APPOINTMENT DETAILS\n");
+    sb.append("====================\n\n");
+    sb.append("Appointment No: ").append(appointment.getAppointmentNumber()).append("\n");
+    sb.append("Status:          ").append(appointment.getStatus()).append("\n\n");
+    sb.append("Patient Name:    ").append(patient != null ? patient.getFullName() : "N/A").append("\n");
+    sb.append("Address:         ").append(patient != null ? patient.getAddress() : "N/A").append("\n");
+    sb.append("Contact Number:  ").append(patient != null ? patient.getContactNumber() : "N/A").append("\n\n");
+    sb.append("Dentist:         ").append(dentist != null ? dentist.getFullName() : "N/A").append("\n");
+    sb.append("Treatment:       ").append(treatment != null ? treatment.getTreatmentName() : "N/A").append("\n\n");
+    sb.append("Date:            ").append(appointment.getAppointmentDate()).append("\n");
+    sb.append("Time:            ").append(appointment.getAppointmentTime()).append("\n");
+ 
+    resultArea.setText(sb.toString());
+} catch (java.sql.SQLException e) {
+    javax.swing.JOptionPane.showMessageDialog(this,
+            "Search failed: " + e.getMessage(),
+            "Database Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+}
+ 
     }//GEN-LAST:event_searchButtonActionPerformed
 
 

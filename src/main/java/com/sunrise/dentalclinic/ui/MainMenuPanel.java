@@ -51,8 +51,10 @@ public void setLoggedInUser(com.sunrise.dentalclinic.model.User user) {
         registerButton.addActionListener(this::registerButtonActionPerformed);
 
         searchButton.setText("Search Appointment");
+        searchButton.addActionListener(this::searchButtonActionPerformed);
 
         billButton.setText("Generate Bill");
+        billButton.addActionListener(this::billButtonActionPerformed);
 
         helpButton.setText("Help");
         helpButton.addActionListener(this::helpButtonActionPerformed);
@@ -103,7 +105,10 @@ public void setLoggedInUser(com.sunrise.dentalclinic.model.User user) {
     }// </editor-fold>//GEN-END:initComponents
 
     private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
-        // TODO add your handling code here:
+    if (parentFrame != null) {
+    parentFrame.showHelp();
+}
+ 
     }//GEN-LAST:event_helpButtonActionPerformed
 
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
@@ -120,6 +125,20 @@ if (choice == javax.swing.JOptionPane.YES_OPTION) {
     parentFrame.showRegisterAppointment();
 }
     }//GEN-LAST:event_registerButtonActionPerformed
+
+    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+        if (parentFrame != null) {
+    parentFrame.showSearchAppointment();
+}
+ 
+    }//GEN-LAST:event_searchButtonActionPerformed
+
+    private void billButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_billButtonActionPerformed
+      if (parentFrame != null) {
+    parentFrame.showBill();
+}
+ 
+    }//GEN-LAST:event_billButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

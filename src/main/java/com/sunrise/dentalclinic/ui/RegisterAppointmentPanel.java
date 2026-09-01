@@ -37,13 +37,31 @@ private void loadDropdowns() {
         for (com.sunrise.dentalclinic.model.Dentist d : dentistDAO.findAll()) {
             dentistCombo.addItem(d);
         }
-        com.sunrise.dentalclinic.dao.TreatmentDAO treatmentDAO = new com.sunrise.dentalclinic.dao.TreatmentDAO();
-        for (com.sunrise.dentalclinic.model.Treatment t : treatmentDAO.findAll()) {
-            treatmentCombo.addItem(t);
+    } catch (java.sql.SQLException e) {
+        javax.swing.JOptionPane.showMessageDialog(this,
+                "Could not load dentists: " + e.getMessage(),
+                "Database Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+private void loadTreatmentsForSelectedDentist() {
+    treatmentCombo.removeAllItems();
+    Object selected = dentistCombo.getSelectedItem();
+    if (!(selected instanceof com.sunrise.dentalclinic.model.Dentist)) {
+        return;
+    }
+    com.sunrise.dentalclinic.model.Dentist selectedDentist =
+            (com.sunrise.dentalclinic.model.Dentist) selected;
+    try {
+        com.sunrise.dentalclinic.dao.DentistTreatmentDAO dentistTreatmentDAO =
+                new com.sunrise.dentalclinic.dao.DentistTreatmentDAO();
+        for (com.sunrise.dentalclinic.model.DentistTreatment dt :
+                dentistTreatmentDAO.findByDentistId(selectedDentist.getDentistId())) {
+            treatmentCombo.addItem(dt);
         }
     } catch (java.sql.SQLException e) {
         javax.swing.JOptionPane.showMessageDialog(this,
-                "Could not load dentists/treatments: " + e.getMessage(),
+                "Could not load treatments for this dentist: " + e.getMessage(),
                 "Database Error", javax.swing.JOptionPane.ERROR_MESSAGE);
     }
 }
@@ -70,11 +88,12 @@ private void loadDropdowns() {
         nameField = new javax.swing.JTextField();
         addressField = new javax.swing.JTextField();
         contactField = new javax.swing.JTextField();
-        dateField = new javax.swing.JTextField();
-        timeField = new javax.swing.JTextField();
         dentistCombo = new javax.swing.JComboBox<>();
         treatmentCombo = new javax.swing.JComboBox<>();
         saveButton = new javax.swing.JButton();
+        backButton = new javax.swing.JButton();
+        dateChooser = new com.toedter.calendar.JDateChooser();
+        timeSpinner = new javax.swing.JSpinner();
 
         jLabel7.setText("jLabel7");
 
@@ -100,12 +119,16 @@ private void loadDropdowns() {
 
         contactField.setText("Contact Number");
 
-        dateField.setText("Input Date");
-
-        timeField.setText("Input Time");
+        dentistCombo.addItemListener(this::dentistComboItemStateChanged);
 
         saveButton.setText("Save Appointment");
         saveButton.addActionListener(this::saveButtonActionPerformed);
+
+        backButton.setText("Back");
+        backButton.addActionListener(this::backButtonActionPerformed);
+
+        timeSpinner.setModel(new javax.swing.SpinnerDateModel(new java.util.Date(), null, null, java.util.Calendar.MINUTE));
+        timeSpinner.setEditor(new javax.swing.JSpinner.DateEditor(timeSpinner, "HH:mm"));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -124,59 +147,63 @@ private void loadDropdowns() {
                             .addComponent(jLabel8)
                             .addComponent(jLabel9))
                         .addGap(49, 49, 49)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(contactField, javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(addressField, javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(dentistCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(treatmentCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(dateField)
-                                .addComponent(timeField))
-                            .addComponent(nameField, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(treatmentCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(dentistCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(contactField)
+                            .addComponent(addressField)
+                            .addComponent(nameField)
+                            .addComponent(dateChooser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(timeSpinner)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(160, 160, 160)
+                        .addGap(22, 22, 22)
+                        .addComponent(backButton)
+                        .addGap(63, 63, 63)
                         .addComponent(jLabel2))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(110, 110, 110)
+                        .addGap(127, 127, 127)
                         .addComponent(saveButton)))
                 .addContainerGap(82, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(15, 15, 15)
-                .addComponent(jLabel2)
-                .addGap(18, 18, 18)
+                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(nameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel2)
+                    .addComponent(backButton))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(addressField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(contactField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(dentistCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(treatmentCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(dateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(nameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(addressField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(contactField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(dentistCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel6)
+                            .addComponent(treatmentCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(dateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
-                    .addComponent(timeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                    .addComponent(timeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(21, 21, 21)
                 .addComponent(saveButton)
-                .addContainerGap(10, Short.MAX_VALUE))
+                .addContainerGap(9, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -204,15 +231,15 @@ if (dentistCombo.getSelectedItem() == null || treatmentCombo.getSelectedItem() =
     return;
 }
  
-java.time.LocalDate appointmentDate;
-try {
-    appointmentDate = java.time.LocalDate.parse(dateField.getText().trim(), DATE_FORMAT);
-} catch (java.time.format.DateTimeParseException e) {
+if (dateChooser.getDate() == null) {
     javax.swing.JOptionPane.showMessageDialog(this,
-            "Date must be in yyyy-MM-dd format, e.g. 2026-08-20.",
+            "Please select an appointment date.",
             "Invalid Input", javax.swing.JOptionPane.WARNING_MESSAGE);
     return;
 }
+java.time.LocalDate appointmentDate = dateChooser.getDate().toInstant()
+        .atZone(java.time.ZoneId.systemDefault())
+        .toLocalDate();
 if (appointmentDate.isBefore(java.time.LocalDate.now())) {
     javax.swing.JOptionPane.showMessageDialog(this,
             "Appointment date cannot be in the past.",
@@ -220,15 +247,10 @@ if (appointmentDate.isBefore(java.time.LocalDate.now())) {
     return;
 }
  
-java.time.LocalTime appointmentTime;
-try {
-    appointmentTime = java.time.LocalTime.parse(timeField.getText().trim(), TIME_FORMAT);
-} catch (java.time.format.DateTimeParseException e) {
-    javax.swing.JOptionPane.showMessageDialog(this,
-            "Time must be in HH:mm 24-hour format, e.g. 14:30.",
-            "Invalid Input", javax.swing.JOptionPane.WARNING_MESSAGE);
-    return;
-}
+java.util.Date timeValue = (java.util.Date) timeSpinner.getValue();
+java.time.LocalTime appointmentTime = timeValue.toInstant()
+        .atZone(java.time.ZoneId.systemDefault())
+        .toLocalTime();
  
 try {
     com.sunrise.dentalclinic.dao.PatientDAO patientDAO = new com.sunrise.dentalclinic.dao.PatientDAO();
@@ -238,8 +260,8 @@ try {
  
     com.sunrise.dentalclinic.model.Dentist selectedDentist =
             (com.sunrise.dentalclinic.model.Dentist) dentistCombo.getSelectedItem();
-    com.sunrise.dentalclinic.model.Treatment selectedTreatment =
-            (com.sunrise.dentalclinic.model.Treatment) treatmentCombo.getSelectedItem();
+  com.sunrise.dentalclinic.model.DentistTreatment selectedTreatment =
+        (com.sunrise.dentalclinic.model.DentistTreatment) treatmentCombo.getSelectedItem();;
  
     com.sunrise.dentalclinic.model.Appointment appointment = new com.sunrise.dentalclinic.model.Appointment(
             patientId,
@@ -272,11 +294,22 @@ try {
 }
     }//GEN-LAST:event_saveButtonActionPerformed
 
+    private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
+       if (parentFrame != null) {
+    parentFrame.showMainMenuAgain();
+}
+    }//GEN-LAST:event_backButtonActionPerformed
+
+    private void dentistComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_dentistComboItemStateChanged
+       loadTreatmentsForSelectedDentist();
+    }//GEN-LAST:event_dentistComboItemStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField addressField;
+    private javax.swing.JButton backButton;
     private javax.swing.JTextField contactField;
-    private javax.swing.JTextField dateField;
+    private com.toedter.calendar.JDateChooser dateChooser;
     private javax.swing.JComboBox<com.sunrise.dentalclinic.model.Dentist> dentistCombo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -290,7 +323,7 @@ try {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField nameField;
     private javax.swing.JButton saveButton;
-    private javax.swing.JTextField timeField;
-    private javax.swing.JComboBox<com.sunrise.dentalclinic.model.Treatment> treatmentCombo;
+    private javax.swing.JSpinner timeSpinner;
+    private javax.swing.JComboBox<com.sunrise.dentalclinic.model.DentistTreatment> treatmentCombo;
     // End of variables declaration//GEN-END:variables
 }
