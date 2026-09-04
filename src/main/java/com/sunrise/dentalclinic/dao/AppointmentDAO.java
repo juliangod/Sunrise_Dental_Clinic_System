@@ -1,21 +1,15 @@
 package com.sunrise.dentalclinic.dao;
-
 import com.sunrise.dentalclinic.model.Appointment;
-
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-
 public class AppointmentDAO {
-
     private final Connection connection;
-
     public AppointmentDAO() {
         this.connection = DBConnectionManager.getInstance().getConnection();
     }
-
     /**
      * Inserts a new appointment. appointment_number is left NULL here —
      * the BEFORE INSERT trigger in schema.sql fills it in automatically.
@@ -31,7 +25,6 @@ public class AppointmentDAO {
             stmt.setTime(5, Time.valueOf(appointment.getAppointmentTime()));
             stmt.setString(6, appointment.getStatus().name());
             stmt.executeUpdate();
-
             try (ResultSet keys = stmt.getGeneratedKeys()) {
                 if (keys.next()) {
                     return keys.getInt(1);
@@ -40,7 +33,6 @@ public class AppointmentDAO {
         }
         throw new SQLException("Insert failed, no ID obtained for appointment.");
     }
-
     /** Core requirement from the brief: "Search using the appointment number." */
     public Appointment findByAppointmentNumber(String appointmentNumber) throws SQLException {
         String sql = "SELECT * FROM appointments WHERE appointment_number = ?";
@@ -54,7 +46,6 @@ public class AppointmentDAO {
         }
         return null;
     }
-
     public Appointment findById(int appointmentId) throws SQLException {
         String sql = "SELECT * FROM appointments WHERE appointment_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -67,7 +58,6 @@ public class AppointmentDAO {
         }
         return null;
     }
-
     /** Powers a "Today's Appointments" report — a nice bonus feature to mention in your report. */
     public List<Appointment> findByDate(LocalDate date) throws SQLException {
         List<Appointment> results = new ArrayList<>();
@@ -82,7 +72,6 @@ public class AppointmentDAO {
         }
         return results;
     }
-
     public List<Appointment> findAll() throws SQLException {
         List<Appointment> results = new ArrayList<>();
         String sql = "SELECT * FROM appointments ORDER BY appointment_date DESC, appointment_time DESC";
@@ -94,7 +83,6 @@ public class AppointmentDAO {
         }
         return results;
     }
-
     public boolean updateStatus(int appointmentId, Appointment.Status status) throws SQLException {
         String sql = "UPDATE appointments SET status = ? WHERE appointment_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -103,7 +91,6 @@ public class AppointmentDAO {
             return stmt.executeUpdate() > 0;
         }
     }
-
     private Appointment mapRow(ResultSet rs) throws SQLException {
         Appointment appointment = new Appointment();
         appointment.setAppointmentId(rs.getInt("appointment_id"));

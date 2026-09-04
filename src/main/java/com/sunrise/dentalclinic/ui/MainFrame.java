@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package com.sunrise.dentalclinic.ui;
+import com.sunrise.dentalclinic.api.RestServer;
 
 /**
  *
@@ -21,9 +22,11 @@ private com.sunrise.dentalclinic.model.User currentUser;
 
     public MainFrame() {
         initComponents();
+        // ADD THIS LINE:
+        RestServer.startServer();
         setupCards();
     }
-
+    
     private void setupCards() {
         loginPanel = new LoginPanel();
         loginPanel.setParentFrame(this);

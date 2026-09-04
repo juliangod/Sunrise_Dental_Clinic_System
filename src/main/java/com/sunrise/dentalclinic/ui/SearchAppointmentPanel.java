@@ -122,52 +122,91 @@ public void setParentFrame(com.sunrise.dentalclinic.ui.MainFrame parentFrame) {
     }//GEN-LAST:event_backButtonActionPerformed
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-     String appointmentNumber = searchField.getText().trim();
-if (appointmentNumber.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(this,
-            "Please enter an appointment number.",
-            "Missing Input", javax.swing.JOptionPane.WARNING_MESSAGE);
-    return;
-}
- 
-try {
-    com.sunrise.dentalclinic.dao.AppointmentDAO appointmentDAO = new com.sunrise.dentalclinic.dao.AppointmentDAO();
-    com.sunrise.dentalclinic.model.Appointment appointment =
-            appointmentDAO.findByAppointmentNumber(appointmentNumber);
- 
-    if (appointment == null) {
-        resultArea.setText("No appointment found with number: " + appointmentNumber);
-        return;
+   String appointmentNumber = searchField.getText().trim();
+        if (appointmentNumber.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Please enter an appointment number.",
+                    "Missing Input", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Perform HTTP GET request to local REST API Web Service
+        new Thread(() -> {
+            try {
+                String apiUrl = "http://localhost:8080/api/appointments/" + java.net.URLEncoder.encode(appointmentNumber, "UTF-8");
+                java.net.URL url = java.net.URI.create(apiUrl).toURL();
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode == 200) {
+                    try (java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = in.readLine()) != null) {
+                            response.append(line);
+                        }
+                        
+                        // Parse JSON key-values manually without external dependencies
+                        String json = response.toString();
+                        String appNum = extractJsonValue(json, "appointmentNumber");
+                        String patId = extractJsonValue(json, "patientId");
+                        String denId = extractJsonValue(json, "dentistId");
+                        String appDate = extractJsonValue(json, "appointmentDate");
+                        String appTime = extractJsonValue(json, "appointmentTime");
+                        String status = extractJsonValue(json, "status");
+
+                        String displayText = String.format(
+                            "--- REST API Response (HTTP 200) ---\n" +
+                            "Appointmentt Number: %s\n" +
+                            "Patient ID: %s\n" +
+                            "Dentist ID: %s\n" +
+                            "Date: %s\n" +
+                            "Time: %s\n" +
+                            "Status: %s",
+                            appNum, patId, denId, appDate, appTime, status
+                        );
+
+                        javax.swing.SwingUtilities.invokeLater(() -> resultArea.setText(displayText));
+                    }
+                } else if (responseCode == 404) {
+                    javax.swing.SwingUtilities.invokeLater(() -> 
+                        resultArea.setText("REST API Response (HTTP 404):\nNo appointment found with reference: " + appointmentNumber)
+                    );
+                } else {
+                    javax.swing.SwingUtilities.invokeLater(() -> 
+                        resultArea.setText("REST API Error: HTTP Status Code " + responseCode)
+                    );
+                }
+            } catch (Exception e) {
+                javax.swing.SwingUtilities.invokeLater(() -> 
+                    javax.swing.JOptionPane.showMessageDialog(this,
+                        "Failed to connect to REST API Web Service: " + e.getMessage(),
+                        "API Connection Error", javax.swing.JOptionPane.ERROR_MESSAGE)
+                );
+            }
+        }).start();
     }
- 
-    com.sunrise.dentalclinic.dao.PatientDAO patientDAO = new com.sunrise.dentalclinic.dao.PatientDAO();
-    com.sunrise.dentalclinic.dao.DentistDAO dentistDAO = new com.sunrise.dentalclinic.dao.DentistDAO();
-    com.sunrise.dentalclinic.dao.TreatmentDAO treatmentDAO = new com.sunrise.dentalclinic.dao.TreatmentDAO();
- 
-    com.sunrise.dentalclinic.model.Patient patient = patientDAO.findById(appointment.getPatientId());
-    com.sunrise.dentalclinic.model.Dentist dentist = dentistDAO.findById(appointment.getDentistId());
-    com.sunrise.dentalclinic.model.Treatment treatment = treatmentDAO.findById(appointment.getTreatmentId());
- 
-    StringBuilder sb = new StringBuilder();
-    sb.append("APPOINTMENT DETAILS\n");
-    sb.append("====================\n\n");
-    sb.append("Appointment No: ").append(appointment.getAppointmentNumber()).append("\n");
-    sb.append("Status:          ").append(appointment.getStatus()).append("\n\n");
-    sb.append("Patient Name:    ").append(patient != null ? patient.getFullName() : "N/A").append("\n");
-    sb.append("Address:         ").append(patient != null ? patient.getAddress() : "N/A").append("\n");
-    sb.append("Contact Number:  ").append(patient != null ? patient.getContactNumber() : "N/A").append("\n\n");
-    sb.append("Dentist:         ").append(dentist != null ? dentist.getFullName() : "N/A").append("\n");
-    sb.append("Treatment:       ").append(treatment != null ? treatment.getTreatmentName() : "N/A").append("\n\n");
-    sb.append("Date:            ").append(appointment.getAppointmentDate()).append("\n");
-    sb.append("Time:            ").append(appointment.getAppointmentTime()).append("\n");
- 
-    resultArea.setText(sb.toString());
-} catch (java.sql.SQLException e) {
-    javax.swing.JOptionPane.showMessageDialog(this,
-            "Search failed: " + e.getMessage(),
-            "Database Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-}
- 
+
+    // Helper method to extract JSON values without requiring external libraries
+    private String extractJsonValue(String json, String key) {
+        String pattern = "\"" + key + "\":";
+        int start = json.indexOf(pattern);
+        if (start == -1) return "N/A";
+        start += pattern.length();
+        
+        while (start < json.length() && (json.charAt(start) == ' ' || json.charAt(start) == '"')) {
+            start++;
+        }
+        
+        int end = start;
+        while (end < json.length() && json.charAt(end) != '"' && json.charAt(end) != ',' && json.charAt(end) != '}') {
+            end++;
+        }
+        
+        return json.substring(start, end).replace("\"", "").trim();
+    
     }//GEN-LAST:event_searchButtonActionPerformed
 
 
